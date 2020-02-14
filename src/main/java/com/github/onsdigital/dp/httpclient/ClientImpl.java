@@ -10,15 +10,25 @@ import java.util.function.Supplier;
 
 public class ClientImpl implements Client {
 
-    private static final String EXECUTE_REQUEST_ERROR = "error executing request";
-    private static final String CLIENT_NULL_ERROR = "error executing request CloseableHttpClient required but was null";
+    static final String EXECUTE_REQUEST_ERROR = "error executing request";
+    static final String REQUEST_NULL_ERROR = "HttpUriRequest expected but was null";
+    static final String CLIENT_NULL_ERROR = "error executing request CloseableHttpClient required but was null";
 
     private Supplier<CloseableHttpClient> httpClientSupplier;
 
+    /**
+     * Create a new instance of the Client.
+     *
+     * @param httpClientSupplier a {@link Supplier} that provides the {@link CloseableHttpClient} to use when
+     *                           executing requests.
+     */
     public ClientImpl(final Supplier<CloseableHttpClient> httpClientSupplier) {
         this.httpClientSupplier = httpClientSupplier;
     }
 
+    /**
+     * Construct a new instance of the client using the default configuration.
+     */
     public ClientImpl() {
         this(() -> HttpClients.createDefault());
     }
@@ -38,7 +48,7 @@ public class ClientImpl implements Client {
 
     private void validateParameters(HttpUriRequest request) throws HttpClientException {
         if (request == null) {
-            throw new HttpClientException("HttpUriRequest expected but was null");
+            throw new HttpClientException(REQUEST_NULL_ERROR);
         }
     }
 
