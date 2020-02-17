@@ -1,11 +1,11 @@
 package com.github.onsdigital.dp.http.examples;
 
+import com.github.onsdigital.dp.http.ClientException;
 import com.github.onsdigital.dp.http.JsonClient;
 import com.github.onsdigital.dp.http.JsonJsonClientImpl;
-import com.github.onsdigital.dp.http.ClientException;
 import com.github.onsdigital.dp.http.ResponseHandler;
 import com.google.gson.GsonBuilder;
-import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 
@@ -21,7 +21,7 @@ public class SendRequestExample {
         JsonClient jsonClient = new JsonJsonClientImpl();
 
         HttpUriRequest req = createRequest();
-        SimpleEntity entity = jsonClient.executeRequestForEntity(req, getMessageResponseHandler());
+        SimpleEntity entity = jsonClient.executeRequestForEntity(req, simpleEntityHandler());
 
         System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(entity));
     }
@@ -34,14 +34,13 @@ public class SendRequestExample {
         return request;
     }
 
-    static ResponseHandler<SimpleEntity> getMessageResponseHandler() {
+    static ResponseHandler<SimpleEntity> simpleEntityHandler() {
         return new ResponseHandler<SimpleEntity>() {
             @Override
-            protected boolean checkStatus(CloseableHttpResponse response) throws ClientException {
-                if (response.getStatusLine().getStatusCode() != 200) {
+            protected void checkStatus(StatusLine statusLine) throws ClientException {
+                if (statusLine.getStatusCode() != 200) {
                     throw new ClientException("incorrects status code returned");
                 }
-                return true;
             }
 
             @Override

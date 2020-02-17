@@ -1,6 +1,7 @@
 package com.github.onsdigital.dp.http;
 
 import com.google.gson.Gson;
+import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 
 import java.io.InputStreamReader;
@@ -14,10 +15,7 @@ public abstract class ResponseHandler<T> {
     }
 
     public T getEntity(CloseableHttpResponse resp) throws ClientException {
-        boolean isSuccessful = checkStatus(resp);
-        if (!isSuccessful) {
-            return null;
-        }
+        checkStatus(resp.getStatusLine());
         return extractEntity(resp);
     }
 
@@ -29,7 +27,16 @@ public abstract class ResponseHandler<T> {
         }
     }
 
-    protected abstract boolean checkStatus(CloseableHttpResponse response) throws ClientException;
+    /**
+     * Define how to check the response status and handle inccorrect statuses.
+     *
+     * @param statusLine the {@link StatusLine} field of {@link CloseableHttpResponse} returned to the client.
+     * @throws ClientException throw if the actual response status does not match the expected status.
+     */
+    protected abstract void checkStatus(StatusLine statusLine) throws ClientException;
 
+    /**
+     * @return the expected {@link Class} to marshall the response body to.
+     */
     protected abstract Class<T> getType();
 }
