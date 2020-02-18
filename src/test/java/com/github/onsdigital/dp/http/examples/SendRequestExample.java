@@ -1,15 +1,17 @@
 package com.github.onsdigital.dp.http.examples;
 
-import com.github.onsdigital.dp.http.ClientException;
-import com.github.onsdigital.dp.http.JsonClient;
-import com.github.onsdigital.dp.http.JsonJsonClientImpl;
-import com.github.onsdigital.dp.http.ResponseHandler;
+import com.github.onsdigital.dp.http.RestClient;
+import com.github.onsdigital.dp.http.RestClientImpl;
+import com.github.onsdigital.dp.http.StatusCodeCheck;
+import com.github.onsdigital.dp.http.errors.DpHttpException;
 import com.google.gson.GsonBuilder;
-import org.apache.http.StatusLine;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 
 import java.io.IOException;
+
+import static com.github.onsdigital.dp.http.errors.DpHttpException.incorrectStatusException;
 
 public class SendRequestExample {
 
@@ -17,13 +19,22 @@ public class SendRequestExample {
         executeRequest();
     }
 
-    static void executeRequest() throws ClientException, IOException {
-        JsonClient jsonClient = new JsonJsonClientImpl();
+    static void executeRequest() throws DpHttpException, IOException {
+        RestClient restClient = new RestClientImpl();
 
         HttpUriRequest req = createRequest();
-        SimpleEntity entity = jsonClient.executeRequestForEntity(req, simpleEntityHandler());
 
+        SimpleEntity entity = restClient.requestForObject(req, SimpleEntity.class, simpleEntityStatusCheck());
         System.out.println(new GsonBuilder().setPrettyPrinting().create().toJson(entity));
+    }
+
+    static StatusCodeCheck simpleEntityStatusCheck() {
+        return (resp -> {
+            int statusCode = resp.getStatusLine().getStatusCode();
+            if (HttpStatus.SC_OK != statusCode) {
+                throw incorrectStatusException(resp, HttpStatus.SC_OK);
+            }
+        });
     }
 
     static HttpUriRequest createRequest() {
@@ -33,23 +44,6 @@ public class SendRequestExample {
 
         return request;
     }
-
-    static ResponseHandler<SimpleEntity> simpleEntityHandler() {
-        return new ResponseHandler<SimpleEntity>() {
-            @Override
-            protected void checkStatus(StatusLine statusLine) throws ClientException {
-                if (statusLine.getStatusCode() != 200) {
-                    throw new ClientException("incorrects status code returned");
-                }
-            }
-
-            @Override
-            protected Class<SimpleEntity> getType() {
-                return SimpleEntity.class;
-            }
-        };
-    }
-
 }
 
 
