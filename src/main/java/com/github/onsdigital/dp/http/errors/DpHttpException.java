@@ -2,7 +2,7 @@ package com.github.onsdigital.dp.http.errors;
 
 import org.apache.http.client.methods.CloseableHttpResponse;
 
-import static sun.tools.jconsole.Resources.format;
+import static java.text.MessageFormat.format;
 
 public class DpHttpException extends Exception {
 
